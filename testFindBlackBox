@@ -149,7 +149,7 @@ void phaseTwo(){
 void phaseThree() { // find black box with sonars, orient to face it, and drive towards it
   Enes100.println("-=PHASE 3=-");  // sensor 10 is back
   boolean boxDetected = false;
-  driveDestination(true, 255, 3, 1);
+  driveDestination(false, 255, 3, 1);
   faceDir(PI);
   int distanceScanned = accurateSonarScan(10, 9);
   if(distanceScanned <= 50){
@@ -159,7 +159,7 @@ void phaseThree() { // find black box with sonars, orient to face it, and drive 
     delay(10000); // comment out later
     //break;
   }
-  driveDestination(true, 255, 3.5, 1);
+  driveDestination(false, 255, 3.5, 1);
   faceDir(PI/2 - 3*PI / 8);
   distanceScanned = accurateSonarScan(10, 9);
   if(distanceScanned <= 100){
@@ -170,6 +170,7 @@ void phaseThree() { // find black box with sonars, orient to face it, and drive 
     //break;
   }
   faceDir(PI/2 - 2*PI / 8);
+  distanceScanned = accurateSonarScan(10, 9);
   if(distanceScanned <= 100){
     Enes100.println("BLACK BOX FOUND!");
     boxDetected = true;
@@ -178,6 +179,7 @@ void phaseThree() { // find black box with sonars, orient to face it, and drive 
     //break;
   }
   faceDir(PI/2 - PI / 8);
+  distanceScanned = accurateSonarScan(10, 9);
   if(distanceScanned <= 100){
     Enes100.println("BLACK BOX FOUND!");
     boxDetected = true;
@@ -186,6 +188,7 @@ void phaseThree() { // find black box with sonars, orient to face it, and drive 
     //break;
   }
   faceDir(PI/2);
+  distanceScanned = accurateSonarScan(10, 9);
   if(distanceScanned <= 100){
     Enes100.println("BLACK BOX FOUND!");
     boxDetected = true;
@@ -193,7 +196,8 @@ void phaseThree() { // find black box with sonars, orient to face it, and drive 
     delay(10000); // comment out later
     //break;
   }
-  faceDir(PI/2 + PI / 8);
+  faceDir(PI/2 + PI / 12);
+  distanceScanned = accurateSonarScan(10, 9);
   if(distanceScanned <= 100){
     Enes100.println("BLACK BOX FOUND!");
     boxDetected = true;
@@ -201,7 +205,8 @@ void phaseThree() { // find black box with sonars, orient to face it, and drive 
     delay(10000); // comment out later
     //break;
   }
-  faceDir(PI/2 + 2*PI / 8);
+  faceDir(PI/2 + 2*PI / 12);
+  distanceScanned = accurateSonarScan(10, 9);
   if(distanceScanned <= 100){
     Enes100.println("BLACK BOX FOUND!");
     boxDetected = true;
@@ -209,7 +214,8 @@ void phaseThree() { // find black box with sonars, orient to face it, and drive 
     delay(10000); // comment out later
     //break;
   }
-  faceDir(PI/2 + 3*PI / 8);
+  faceDir(PI/2 + 3*PI / 12);
+  distanceScanned = accurateSonarScan(10, 9);
   if(distanceScanned <= 100){
     Enes100.println("BLACK BOX FOUND!");
     boxDetected = true;
