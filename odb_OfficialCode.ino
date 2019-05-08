@@ -55,7 +55,7 @@ int distance4;
 void setup() {
   initialize(); //Sets up motors
   
-  Enes100.begin("ODP", BLACK_BOX, 5, 1, 0);
+  Enes100.begin("ODP", BLACK_BOX, 9, 1, 0);
   Enes100.println("-=xxxXXX[Operation Dark Phoenix]XXXxx=- IN DIS BITS:");
   
   /*
@@ -68,12 +68,16 @@ void setup() {
   
   phaseOne();
   phaseTwo();
+  phaseThree();
   
 }
 
 
 void loop() {
   // put your main code here, to run repeatedly:
+  //Enes100.println("Start: ");
+  //Enes100.println(accurateSonarScan(10, 10));
+  //delay(1000);
   
 }
 
@@ -99,13 +103,13 @@ void testRun(){
 void phaseOne(){
   Enes100.println("-=PHASE 1=-"); 
   if(Enes100.location.y > 1){
-    driveDestination(false, 255, 0.2, 1);
+    driveDestination(false, 255, 0.3, 1);
   }
   else if(Enes100.location.y < 1){
-    driveDestination(false, 255, 0.2, 1);
+    driveDestination(false, 255, 0.3, 1);
   }
   else{
-    driveDestination(false, 255, 0.2, 1);
+    driveDestination(false, 255, 0.3, 1);
   }
   faceDir(0);
   phase1 = false;
@@ -142,59 +146,110 @@ void phaseTwo(){
       driveDestination(true, 255, 3, 1);
     }
   }*/
-  driveDestination(true, 255, 3, .9);
+  //driveDestination(true, 255, 3, .9);
+  driveDestination(false, 255, 3, 1);
 }
 
 void phaseThree() { // find black box with sonars, orient to face it, and drive towards it
-  Enes100.println("-=PHASE 3=-"); 
-  float d[30];
-  float pi = 3.1415926;
-  int r = 0;
-  int s = 0;
-  float ang;
-  Enes100.updateLocation();
-  faceDir(pi/2);
-  while (s==0){
-    int i = 0;
-      faceDir(pi/2 + ((i+1)*0.10588));
-      d[i] = (sonarReadDistanceSensor(10));
-      Enes100.println("");
-      Enes100.println("Sonar reading: ");
-      Enes100.println(d[i]);
-      Enes100.println("");
-      if (d[i] <= 2) d[i] = d[i-1];
-      /*if (d[i] <= (d[i-1]-8)) {
-        r = pi/2 + ((i+1)*0.10588);
-        Enes100.println("Found r");
-      }*/
-      if (d[i+1] >= (d[i]+8)) {
-        s = pi/2 + ((i+1)*0.10588);
-        Enes100.println("Found s");
-        Enes100.print("STOP!-Rotating");
-        delay(3000);
-      }
-      if (s!=0) {
-        ang = s;
-        Enes100.println("Found ang for Black Box");
-        driveBreak();
-      }
-      delay(500);
-    i++;
-    if (i >=30) i = 0;
+  Enes100.println("-=PHASE 3=-");  // sensor 10 is back
+  boolean boxDetected = false;
+  driveDestination(false, 255, 3, 1);
+  faceDir(3.14);
+  int distanceScanned = accurateSonarScan(10, 9);
+  if(distanceScanned <= 50){
+    Enes100.println("BLACK BOX FOUND!");
+    boxDetected = true;
+    driveToBox(distanceScanned);
+    delay(10000); // comment out later
+    //break;
   }
-  faceDir(ang);
+  driveDestination(false, 255, 3.5, 1);
+  for(int i = -5; i <= 5; i++){
+    faceDir(PI/2 + i*PI / 20);
+    distanceScanned = accurateSonarScan(10, 9);
+    if(distanceScanned <= 100){
+      Enes100.println("BLACK BOX FOUND!");
+      boxDetected = true;
+      driveToBox(distanceScanned);
+      delay(10000); // comment out later
+      //break;
+    }
+  }
+}
 
-  Enes100.updateLocation();
-  float x,y;
-  x = Enes100.location.x + sonarReadDistanceSensor(10)*cos(ang) + 4;
-  y = Enes100.location.y + sonarReadDistanceSensor(10)*sin(ang) + 4;
-  Enes100.print("(x,y): (");
-  Enes100.print(x);
-  Enes100.print(",");
-  Enes100.print(y);
-  Enes100.print(")");
+void driveToBox(int sensedDistance){
+  int driveDistance = sensedDistance;
+  int quadrant;
+  int degreeTurned;
+  if(Enes100.location.theta >= 0 && Enes100.location.theta <= PI/2){
+    quadrant = 1;
+    degreeTurned = (Enes100.location.theta / PI) * 180;
+  }
+  else if(Enes100.location.theta >= PI / 2 && Enes100.location.theta <= PI){
+    quadrant = 2;
+    degreeTurned = (Enes100.location.theta / PI) * 180;
+  }
+  else if(Enes100.location.theta <= 0 && Enes100.location.theta <= -PI/2){
+    quadrant = 3;
+    degreeTurned = -(Enes100.location.theta / PI) * 180;
+  }
+  else if(Enes100.location.theta >= -PI / 2 && Enes100.location.theta <= -PI){
+    quadrant = 4;
+    degreeTurned = -(Enes100.location.theta / PI) * 180;
+  }
+  Enes100.println("DRIVING TO BLACK BOX");
+  //DO MATH FOR DRIVE DESTINATION
+  int xDiff = driveDistance*(cos(degreeTurned));
+  int yDiff = driveDistance*(sin(degreeTurned));
 
-  driveDestination(false,255,x,y);
+  if(quadrant == 1){
+    driveDestination(false, 255, Enes100.location.x + xDiff, Enes100.location.y + yDiff);
+  }
+  else if(quadrant == 2){
+    driveDestination(false, 255, Enes100.location.x - xDiff, Enes100.location.y + yDiff);
+  }
+  else if(quadrant == 3){
+    driveDestination(false, 255, Enes100.location.x - xDiff, Enes100.location.y - yDiff);
+  }
+  else if(quadrant == 4){
+    driveDestination(false, 255, Enes100.location.x + xDiff, Enes100.location.y - yDiff);
+  }
+}
+
+int accurateSonarScan(int sensor, int tolerance){
+  int distance [tolerance]; // tolerance
+  for(int i = 0; i < tolerance; i++){
+    distance[i] = sonarReadDistanceSensor(sensor);
+    if(distance[i] == 0){
+      i--;
+    }
+    //delay(500);
+  }
+  for(int b = 0; b < tolerance; b++){
+    int smallest = b;
+    int temp = distance[b];
+    for(int f = b+1; f < tolerance; f++){
+      if(distance[smallest] > distance[f]){
+        smallest = f;
+      }
+    }
+    distance[b] = distance[smallest];
+    distance[smallest] = temp;
+  }
+  Enes100.print("Array: [");
+  for(int i = 0; i < tolerance; i++){
+    if(i != 0){
+      Enes100.print(", ");
+    }
+    Enes100.print(distance[i]);
+  }
+  int middle = tolerance / 2;
+  int median = distance[middle];
+  Enes100.println("]");
+  Enes100.print("Median number: ");
+  Enes100.println(middle);
+  Enes100.println("Median: " + distance[median]);
+  return distance[median];
 }
 
 void dodgeObstacle(){
@@ -791,6 +846,7 @@ int sonarReadDistanceSensor(int sonarNum){
   }
 }
 void updateNavigation(){
+  delay(100);
   Enes100.updateLocation();
 }
 void clearTrig(){
